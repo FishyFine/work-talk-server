@@ -37,20 +37,29 @@ func (u *UserInfo)checkExist()(bool,error){
 }
 
 func (u *UserInfo)Register(){
-	go u.save()
-	go u.publish()
+	go func() {
+		if err:=u.save();err!=nil{
+			log.Println(err)
+		}
+	}()
+	go func(){
+		if err:=u.publish();err!=nil{
+			log.Println(err)
+		}
+	}()
 }
 
-func (u *UserInfo)save(){
+func (u *UserInfo)save()error{
 	conf := mysqlFunc.NewMysqlConf()
 	helper,err := mysqlFunc.NewMysqlHelper(conf)
 	if err!=nil{
-		log.Println(err)
+		return err
 	}
 	helper.DB.Create(u)
+	return nil
 }
 
-func (u *UserInfo)publish(){
+func (u *UserInfo)publish()error{
 	data,err := json.Marshal(u)
 	if err!=nil{
 		log.Println(err)
@@ -58,7 +67,11 @@ func (u *UserInfo)publish(){
 	conf := nsqFunc.NewNSQConf()
 	helper,err:=nsqFunc.NewNSQHelper(conf)
 	if err!=nil{
-		log.Println(err)
+		return err
 	}
-	helper.Producer.Publish(conf.Topic,data)
+	err = helper.Producer.Publish(conf.Topic,data)
+	if err!=nil{
+		return err
+	}
+	return nil
 }

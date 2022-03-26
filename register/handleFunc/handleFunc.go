@@ -17,7 +17,7 @@ func Register(ctx *gin.Context){
 	ret,err := user.Check()
 	if err!=nil{
 		log.Println(err)
-		ctx.JSON(400,gin.H{"result":"服务器发生了异常，请联系管理员qq：1923325014"})
+		ctx.JSON(500,gin.H{"result":"服务器发生了异常，请联系管理员qq：1923325014"})
 		return
 	}
 	if !ret{
